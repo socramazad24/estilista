@@ -1,0 +1,71 @@
+# =========================
+# 🔹 DJANGO / PYTHON
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+.venv/
+
+# Archivos de configuración
+*.log
+*.pot
+*.pyc
+db.sqlite3
+db.sqlite3-journal
+
+# Archivos de Django
+media/
+staticfiles/
+
+# Variables de entorno
+.env
+.env.*
+
+# Migraciones (opcional, si no quieres subirlas)
+**/migrations/
+!**/migrations/__init__.py
+
+# =========================
+# 🔹 REACT / NODE
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build de React
+build/
+dist/
+
+# Archivos de entorno frontend
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# =========================
+# 🔹 GENERALES
+# =========================
+# Sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Archivos temporales
+*.swp
+*.swo
+
+# =========================
+# 🔹 OTROS
+# =========================
+coverage/
+.cache/
