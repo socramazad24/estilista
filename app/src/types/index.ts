@@ -119,6 +119,7 @@ export interface Sale {
   notes?: string;
 
   created_at?: string;
+  status_display?: string;
 }
 
 // Inventory types
