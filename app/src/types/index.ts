@@ -70,37 +70,55 @@ export interface Client {
 // Sale types
 export interface SaleItem {
   id: number;
-  service: number;
+
+  // 🔥 OPCIONALES (clave)
+  service?: number;
+
   service_name?: string;
-  service_detail?: Service;
+
   quantity: number;
   unit_price: number;
-  discount: number;
+
+  // 🔥 OPCIONAL
+  discount?: number;
+
   total: number;
-  notes?: string;
+
+  // opcional si lo usas en otros lados
+  service_detail?: any;
 }
 
 export interface Sale {
   id: number;
-  invoice_number: string;
-  client: number;
+
+  invoice_number?: string;
+
+  client?: number;
   client_name?: string;
-  stylist: number;
+
+  stylist?: number;
   stylist_name?: string;
-  cashier: number;
+
+  cashier?: number;
   cashier_name?: string;
-  date: string;
+
+  date?: string;
+
   items: SaleItem[];
+
   subtotal: number;
-  discount: number;
-  tax: number;
+  discount?: number;
+  tax?: number;
   total: number;
-  payment_method: 'cash' | 'card' | 'transfer' | 'nequi' | 'daviplata' | 'other';
+
+  payment_method?: string;
   payment_method_display?: string;
-  status: 'pending' | 'completed' | 'cancelled';
-  status_display?: string;
+
+  status?: string;
+
   notes?: string;
-  created_at: string;
+
+  created_at?: string;
 }
 
 // Inventory types

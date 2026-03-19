@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Spinner } from '@/components/ui/spinner';
 import { Scissors, Lock, User } from 'lucide-react';
+import axios from 'axios';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -17,21 +18,35 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError('');
+      setIsLoading(true);
 
-    try {
-      await login({ username, password });
-      navigate('/');
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { detail?: string } } };
-      setError(error.response?.data?.detail || 'Usuario o contraseña incorrectos');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      try {
+        await login({ username, password });
+        navigate('/');
+      } catch (err: unknown) {
+        console.error('Error completo:', err); // Para debugging
+        
+        if (axios.isAxiosError(err)) {
+          if (!err.response) {
+            // Error de red (CORS, servidor caído, etc.)
+            setError('No se puede conectar al servidor. Verifica que el backend esté ejecutándose en http://localhost:8000');
+          } else if (err.response.status === 401) {
+            setError('Usuario o contraseña incorrectos');
+          } else if (err.response.status === 0) {
+            setError('Error de CORS. Verifica la configuración del backend');
+          } else {
+            setError(err.response.data?.detail || `Error ${err.response.status}: ${err.response.statusText}`);
+          }
+        } else {
+          setError('Error desconocido al iniciar sesión');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-blue-50 p-4">

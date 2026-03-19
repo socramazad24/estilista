@@ -106,9 +106,9 @@ export default function NewSale() {
         service: service.id,
         service_detail: service,
         quantity: 1,
-        unit_price: service.price,
+        unit_price: Number(service.price) || 0,
         discount: 0,
-        total: service.price,
+        total: Number(service.price) || 0,
         notes: '',
       };
       setCart([...cart, newItem]);
@@ -124,7 +124,7 @@ export default function NewSale() {
     setCart(cart.map(item => {
       if (item.service === serviceId) {
         const newQuantity = Math.max(1, item.quantity + delta);
-        return { ...item, quantity: newQuantity, total: newQuantity * item.unit_price };
+        return { ...item, quantity: newQuantity, total: newQuantity * (Number(item.unit_price) || 0) };
       }
       return item;
     }));
@@ -162,10 +162,10 @@ export default function NewSale() {
       const saleData = {
         client: selectedClient.id,
         stylist: parseInt(selectedStylist),
-        subtotal: cart.reduce((sum, item) => sum + item.total, 0),
+        subtotal: cart.reduce((sum, item) => sum + (Number(item.total) || 0), 0),
         discount: 0,
         tax: 0,
-        total: cart.reduce((sum, item) => sum + item.total, 0),
+        total: cart.reduce((sum, item) => sum + (Number(item.total) || 0), 0),
         payment_method: paymentMethod,
         notes: '',
         items: cart.map(item => ({
@@ -178,7 +178,62 @@ export default function NewSale() {
       };
 
       const response = await salesApi.create(saleData);
-      setCompletedSale(response.data);
+
+      console.log("SALE RESPONSE:", response.data);
+
+      const saleResponse = response.data;
+
+      // Buscar estilista
+      const stylist = stylists.find(
+        s => s.id === parseInt(selectedStylist)
+      );
+
+      // Construir venta completa para la factura
+      const formattedSale = {
+        ...saleResponse,
+
+        // 🔥 Fecha segura
+        date: saleResponse.date || new Date().toISOString(),
+
+        // 🔥 Nombres seguros
+        client_name: saleResponse.client_name || selectedClient?.full_name || "—",
+
+        stylist_name: saleResponse.stylist_name || (
+          stylist ? `${stylist.first_name} ${stylist.last_name}` : "—"
+        ),
+
+        cashier_name: saleResponse.cashier_name || "Admin",
+
+        // 🔥 Items corregidos
+        items: (saleResponse.items || cart).map((item: any, index: number) => ({
+          id: item.id || index,
+
+          service_name:
+            item.service_name ||
+            item.service_detail?.name ||
+            cart[index]?.service_detail?.name ||
+            "Servicio",
+
+          quantity: Number(item.quantity) || 1,
+
+          unit_price: Number(item.unit_price) || 0,
+
+          total:
+            Number(item.total) ||
+            (Number(item.unit_price) || 0) * (Number(item.quantity) || 1),
+        })),
+
+        // 🔥 Totales seguros
+        subtotal:
+          Number(saleResponse.subtotal) ||
+          cart.reduce((sum, item) => sum + item.total, 0),
+
+        total:
+          Number(saleResponse.total) ||
+          cart.reduce((sum, item) => sum + item.total, 0),
+      };
+
+      setCompletedSale(formattedSale);
       setShowInvoiceDialog(true);
       toast.success('Venta completada exitosamente');
     } catch (error) {
@@ -199,7 +254,10 @@ export default function NewSale() {
     navigate('/ventas');
   };
 
-  const cartTotal = cart.reduce((sum, item) => sum + item.total, 0);
+const cartTotal = cart.reduce(
+  (sum, item) => sum + (Number(item.total) || 0),
+  0
+);
 
   return (
     <div className="space-y-6">
@@ -545,8 +603,11 @@ export default function NewSale() {
               <div className="space-y-2 text-sm mb-4">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Fecha:</span>
-                  <span>{new Date(completedSale.date as string).toLocaleString()}</span>
-                </div>
+                  <span>
+                    {completedSale.date
+                      ? new Date(completedSale.date as string).toLocaleString()
+                      : "—"}
+                  </span>                </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Cliente:</span>
                   <span>{completedSale.client_name as string}</span>
@@ -578,8 +639,9 @@ export default function NewSale() {
                       <td className="py-2">{item.service_name}</td>
                       <td className="text-center py-2">{item.quantity}</td>
                       <td className="text-right py-2">{formatCurrency(item.unit_price)}</td>
-                      <td className="text-right py-2">{formatCurrency(item.total)}</td>
-                    </tr>
+                      <td className="text-right py-2">
+                        {formatCurrency(Number(item.total) || 0)}
+                      </td>                    </tr>
                   ))}
                 </tbody>
               </table>

@@ -71,12 +71,25 @@ class SaleCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         items_data = validated_data.pop('items')
         validated_data['cashier'] = self.context['request'].user
+
         sale = Sale.objects.create(**validated_data)
-        
+
         for item_data in items_data:
-            SaleItem.objects.create(sale=sale, **item_data)
-        
-        return sale
+            quantity = item_data['quantity']
+            unit_price = item_data['unit_price']
+            discount = item_data.get('discount', 0)
+
+            total = (quantity * unit_price) - discount
+
+            SaleItem.objects.create(
+                sale=sale,
+                total=total,
+                **item_data
+            )
+
+        return Sale.objects.prefetch_related('items__service').select_related(
+    'client', 'stylist', 'cashier'
+).get(id=sale.id)
 
 
 class SaleListSerializer(serializers.ModelSerializer):

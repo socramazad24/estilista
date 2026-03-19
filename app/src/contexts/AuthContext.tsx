@@ -41,16 +41,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: LoginCredentials) => {
     try {
       const response = await authApi.login(credentials);
-      const { access, refresh, user } = response.data;
-      
+      const { access, refresh } = response.data;
+
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
-      
-      setUser(user);
+
+      // 🔥 AQUÍ ESTÁ LA CLAVE
+      const userResponse = await authApi.getCurrentUser();
+      setUser(userResponse.data);
+
     } catch (error) {
       throw error;
     }
-  };
+};
 
   const logout = () => {
     authApi.logout();

@@ -14,6 +14,7 @@ const api: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // ← AGREGAR ESTO para CORS con credenciales
 });
 
 // Request interceptor to add auth token
@@ -21,12 +22,13 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`; // ← Verificar formato Bearer
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
+
 
 // Response interceptor to handle token refresh
 api.interceptors.response.use(
